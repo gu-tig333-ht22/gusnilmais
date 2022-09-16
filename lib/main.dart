@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+import 'package:template/providers/todolist_provider.dart';
 import 'package:template/screens/home_screen.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(providers: [
+      ChangeNotifierProvider(create: (_) => TodoList())
+    ], child: const MyApp()));
 }
 
 class MyApp extends StatelessWidget {

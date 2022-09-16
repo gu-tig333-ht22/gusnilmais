@@ -1,12 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:template/models/todo.dart';
+import 'package:template/providers/todolist_provider.dart';
 
-class AddItemScreen extends StatelessWidget {
+class AddItemScreen extends StatefulWidget {
   const AddItemScreen({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    TextEditingController inputController = TextEditingController();
+  State<AddItemScreen> createState() => _AddItemScreenState();
+}
 
+class _AddItemScreenState extends State<AddItemScreen> {
+  TextEditingController inputController = TextEditingController();
+  String? errorText;
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         shadowColor: Colors.transparent,
@@ -23,21 +32,34 @@ class AddItemScreen extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: TextFormField(
+                  onChanged: (_) => setState(() {}),
                   cursorColor: Theme.of(context).primaryColor,
                   style: const TextStyle(
                       color: Color.fromARGB(255, 191, 191, 194)),
                   controller: inputController,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
+                    errorStyle: const TextStyle(color: Color.fromARGB(255, 255, 17, 0)),
+                      errorText: errorText,
                       border: InputBorder.none,
-                      hintStyle:
-                          TextStyle(color: Color.fromARGB(255, 191, 191, 194)),
+                      hintStyle: const TextStyle(
+                          color: Color.fromARGB(255, 191, 191, 194)),
                       hintText: "What are you going to do?"),
                 ),
               ),
             ),
           ),
           GestureDetector(
-            onTap: () {},
+            onTap: inputController.text.isEmpty
+                ? () => setState(() {
+                      errorText = "You need to write a todo";
+                    })
+                : () {
+                    Provider.of<TodoList>(context, listen: false).addTodo(Todo(
+                        id: DateTime.now().millisecondsSinceEpoch,
+                        checked: false,
+                        title: inputController.text));
+                    Navigator.of(context).pop();
+                  },
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: const [
@@ -56,5 +78,11 @@ class AddItemScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    inputController.dispose();
+    super.dispose();
   }
 }
