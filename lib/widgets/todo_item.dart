@@ -1,16 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:template/models/todo.dart';
+import 'package:template/providers/todolist_provider.dart';
 
-class TodoItem extends StatefulWidget {
-  final String title;
-  final bool checked;
-  const TodoItem({required this.checked, required this.title, Key? key})
-      : super(key: key);
+class TodoItem extends StatelessWidget {
+  final Todo item;
+  
+  const TodoItem({required this.item, Key? key}) : super(key: key);
 
-  @override
-  State<TodoItem> createState() => _TodoItemState();
-}
-
-class _TodoItemState extends State<TodoItem> {
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -38,20 +35,24 @@ class _TodoItemState extends State<TodoItem> {
       ),
               child: Checkbox(
                   activeColor: Theme.of(context).primaryColor,
-                  value: widget.checked,
-                  onChanged: (_) {}),
+                  value: item.checked,
+                  onChanged: (_) {
+                      Provider.of<TodoList>(context, listen: false).updateChecked(item.id);
+                  }),
             ),
             Text(
-              widget.title,
+              item.title,
               style: TextStyle(
                   color: const Color.fromARGB(255, 191, 191, 194),
-                  decoration: widget.checked
+                  decoration: item.checked
                       ? TextDecoration.lineThrough
                       : TextDecoration.none),
             ),
             const Spacer(),
             IconButton(
-                onPressed: () {},
+                onPressed: () {
+                    Provider.of<TodoList>(context, listen: false).deleteTodo(item.id);
+                },
                 icon: const Icon(Icons.close,
                     color: Color.fromARGB(255, 120, 120, 121)))
           ],
