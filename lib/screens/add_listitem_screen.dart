@@ -55,8 +55,7 @@ class _AddItemScreenState extends State<AddItemScreen> {
                     })
                 : () {
                     Provider.of<TodoList>(context, listen: false).addTodo(Todo(
-                        id: DateTime.now().millisecondsSinceEpoch,
-                        checked: false,
+                        done: false,
                         title: inputController.text));
                     Navigator.of(context).pop();
                   },

@@ -35,23 +35,23 @@ class TodoItem extends StatelessWidget {
       ),
               child: Checkbox(
                   activeColor: Theme.of(context).primaryColor,
-                  value: item.checked,
+                  value: item.done,
                   onChanged: (_) {
-                      Provider.of<TodoList>(context, listen: false).updateChecked(item.id);
+                      Provider.of<TodoList>(context, listen: false).updateChecked(item.id!);
                   }),
             ),
             Text(
               item.title,
               style: TextStyle(
                   color: const Color.fromARGB(255, 191, 191, 194),
-                  decoration: item.checked
+                  decoration: item.done
                       ? TextDecoration.lineThrough
                       : TextDecoration.none),
             ),
             const Spacer(),
             IconButton(
                 onPressed: () {
-                    Provider.of<TodoList>(context, listen: false).deleteTodo(item.id);
+                    Provider.of<TodoList>(context, listen: false).deleteTodo(item.id!);
                 },
                 icon: const Icon(Icons.close,
                     color: Color.fromARGB(255, 120, 120, 121)))
