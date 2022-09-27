@@ -1,62 +1,89 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:template/models/todo.dart';
+import 'package:http/http.dart' as http;
+
+const String apiKey = "6ee09eff-1b5c-4aac-bd7e-0583caa9ab52";
 
 class TodoList with ChangeNotifier {
+  late Map<String, Todo> _todoList;
+  bool initState = true;
 
-    final Map<int, Todo> _testList = {
-      1 : Todo(id: 1, checked: false, title: "Do something"),
-      2 : Todo(id: 2, checked: true, title: "Do something else"),
-      3 : Todo(id: 3, checked: false, title: "Do something else 2"),
-      4 : Todo(id: 4, checked: false, title: "Do something else 3"),
-      5 : Todo(id: 5, checked: true, title: "Do something else 4"),
-      6 : Todo(id: 6, checked: false, title: "Do something else 5"),
-      7 : Todo(id: 7, checked: false, title: "Do something else 6"),
-      8 : Todo(id: 8, checked: false, title: "Do something else 7"),
-      9 : Todo(id: 9, checked: false, title: "Do something else 8"),
-      10 : Todo(id: 10, checked: false, title: "Do something else 9"),
-      11 : Todo(id: 11, checked: false, title: "Do something else 10"),
-      12 : Todo(id: 12, checked: false, title: "Do something else 11"),
-      13 : Todo(id: 13, checked: false, title: "Do something else 12"),
-      14 : Todo(id: 14, checked: false, title: "Do something else 13"),
-    };
+  Map<String, Todo> get todoList => _todoList;
 
-    Map<int, Todo> get testList => _testList;
+  TodoList() {
+    getTodoListFromServer();
+  }
 
-    deleteTodo (int id) {
-      _testList.remove(id);
-      notifyListeners();
+  getTodoListFromServer() async {
+    _todoList = {};
+
+    Uri api = Uri.parse("https://todoapp-api.apps.k8s.gu.se/todos?key=$apiKey");
+    var serverResponse = await http.get(api);
+    var returnData = jsonDecode(serverResponse.body);
+
+    for (var todo in returnData) {
+      Todo newTodo = Todo.fromJson(todo);
+      _todoList[newTodo.id!] = newTodo;
+    }
+    initState = false;
+
+    notifyListeners();
+  }
+
+  deleteTodo(String id) async {
+    Uri api = Uri.parse("https://todoapp-api.apps.k8s.gu.se/todos/$id?key=$apiKey");
+    await http.delete(api);
+    _todoList.remove(id);
+
+    notifyListeners();
+  }
+
+  addTodo(Todo newTodo) async {
+    Uri api = Uri.parse("https://todoapp-api.apps.k8s.gu.se/todos?key=$apiKey");
+    String data = jsonEncode(newTodo);
+    var serverResponse = await http.post(api, headers: {"Content-Type": "application/json"}, body: data);
+    var returnData = jsonDecode(serverResponse.body);
+
+    for (var todo in returnData) {
+      Todo newTodo = Todo.fromJson(todo);
+      _todoList[newTodo.id!] = newTodo;
     }
 
-    addTodo (Todo newTodo) {
-      _testList[newTodo.id] = newTodo;
-      notifyListeners();
-    }
+    notifyListeners();
+  }
 
-    updateChecked (int id) {
-      _testList[id]!.checked = !_testList[id]!.checked;
-      notifyListeners();
-    }
+  updateChecked(String id) async {
+    Uri api = Uri.parse("https://todoapp-api.apps.k8s.gu.se/todos/$id?key=$apiKey");
 
-    Map<int, Todo> getDoneItems() {
-      Map<int, Todo> returnMap = {};
+    _todoList[id]!.done = !_todoList[id]!.done;
 
-      for(var todo in testList.values) {
-        if(todo.checked) {
-          returnMap[todo.id] = todo;
-        }
+    String data = jsonEncode(_todoList[id]);
+    await http.put(api, headers: {"Content-Type": "application/json"}, body: data);
+
+    notifyListeners();
+  }
+
+  Map<String, Todo> getDoneItems() {
+    Map<String, Todo> returnMap = {};
+
+    for (var todo in _todoList.values) {
+      if (todo.done) {
+        returnMap[todo.id!] = todo;
       }
-      return returnMap;
     }
+    return returnMap;
+  }
 
-    Map<int, Todo> getUndoneItems() {
-      Map<int, Todo> returnMap = {};
+  Map<String, Todo> getUndoneItems() {
+    Map<String, Todo> returnMap = {};
 
-      for(var todo in testList.values) {
-        if(!todo.checked) {
-          returnMap[todo.id] = todo;
-        }
+    for (var todo in _todoList.values) {
+      if (!todo.done) {
+        returnMap[todo.id!] = todo;
       }
-      return returnMap;
     }
-
+    return returnMap;
+  }
+  
 }

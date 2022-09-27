@@ -16,6 +16,12 @@ class _HomeScreenState extends State<HomeScreen> {
   int mode = 0;
 
   @override
+  void initState() {
+    super.initState();
+    TodoList();
+  }
+
+  @override
   Widget build(BuildContext context) {
     const Color textColor = Color.fromARGB(255, 191, 191, 194);
     return Scaffold(
@@ -78,7 +84,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget todoList(int mode) {
     return Consumer<TodoList>(
       builder: (context, list, child) {
-        Map<int, Todo> mapToShow = selectionType(mode, list);
+        Map<String, Todo> mapToShow = selectionType(mode, list);
+        if(list.initState) return const Center(child: CircularProgressIndicator());
         return mapToShow.isEmpty
             ? Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 15.0),
@@ -111,10 +118,10 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Map<int, Todo> selectionType(int mode, TodoList testList) {
+  Map<String, Todo> selectionType(int mode, TodoList testList) {
     switch (mode) {
       case 0:
-        return testList.testList;
+        return testList.todoList;
       case 1:
         return testList.getDoneItems();
       case 2:
