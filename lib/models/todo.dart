@@ -13,10 +13,10 @@ class Todo {
     );
   }
 
-  Map<String, dynamic> toJson() {
+  Map<String, dynamic> toJson({bool invertDone = false}) {
     return {
-      "done": done,
-      "title": title
+      "done": invertDone ? !done : done,
+      "title": title 
     };
   }
 

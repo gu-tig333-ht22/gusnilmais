@@ -57,7 +57,7 @@ class TodoList with ChangeNotifier {
     http.Response serverResponse = await http.put(
       Uri.parse("$baseUrl/${todo.id}$key"),
       headers: {"Content-Type": "application/json"}, 
-      body: jsonEncode({"title": todo.title, "done": !todo.done}));
+      body: jsonEncode(todo.toJson(invertDone: true)));
 
     if(serverResponse.statusCode == 200) {
     updateTodoList(serverResponse);

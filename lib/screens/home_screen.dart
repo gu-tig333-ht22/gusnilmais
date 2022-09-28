@@ -23,7 +23,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const Color textColor = Color.fromARGB(255, 191, 191, 194);
     return Scaffold(
       extendBody: true,
       bottomNavigationBar: const BottomAppBar(
@@ -38,32 +37,7 @@ class _HomeScreenState extends State<HomeScreen> {
             shadowColor: Colors.transparent,
             centerTitle: true,
             title: const Text("TIG169 TODO"),
-            actions: [
-              PopupMenuButton(
-                color: Theme.of(context).scaffoldBackgroundColor,
-                icon: const Icon(Icons.more_vert),
-                onSelected: (int value) {
-                  setState(() {
-                    mode = value;
-                  });
-                },
-                itemBuilder: (BuildContext con) {
-                  return [
-                    const PopupMenuItem(
-                        value: 0,
-                        child: Text("All", style: TextStyle(color: textColor))),
-                    const PopupMenuItem(
-                        value: 1,
-                        child:
-                            Text("Done", style: TextStyle(color: textColor))),
-                    const PopupMenuItem(
-                        value: 2,
-                        child:
-                            Text("Undone", style: TextStyle(color: textColor))),
-                  ];
-                },
-              ),
-            ],
+            actions: [_menuButton()],
           ),
         ],
         body: Padding(
@@ -85,7 +59,11 @@ class _HomeScreenState extends State<HomeScreen> {
     return Consumer<TodoList>(
       builder: (context, list, child) {
         List<Todo> listToShow = selectionType(mode, list);
-        if(list.initState) return const Center(child: CircularProgressIndicator());
+        if (list.initState) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
         return listToShow.isEmpty
             ? Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 15.0),
@@ -98,9 +76,38 @@ class _HomeScreenState extends State<HomeScreen> {
             : ListView(
                 physics: const BouncingScrollPhysics(),
                 children: [
-                  ...listToShow.map((e) => TodoItem(item: e, key: ValueKey(e.id)))
+                  ...listToShow
+                      .map((e) => TodoItem(item: e, key: ValueKey(e.id)))
                 ],
               );
+      },
+    );
+  }
+
+  Widget _menuButton() {
+    const Color textColor = Color.fromARGB(255, 191, 191, 194);
+
+    return PopupMenuButton(
+      color: Theme.of(context).scaffoldBackgroundColor,
+      icon: const Icon(Icons.more_vert),
+      onSelected: (int value) {
+        setState(
+          () {
+            mode = value;
+          },
+        );
+      },
+      itemBuilder: (BuildContext con) {
+        return [
+          const PopupMenuItem(
+              value: 0, child: Text("All", style: TextStyle(color: textColor))),
+          const PopupMenuItem(
+              value: 1,
+              child: Text("Done", style: TextStyle(color: textColor))),
+          const PopupMenuItem(
+              value: 2,
+              child: Text("Undone", style: TextStyle(color: textColor))),
+        ];
       },
     );
   }
