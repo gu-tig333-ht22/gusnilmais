@@ -84,9 +84,9 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget todoList(int mode) {
     return Consumer<TodoList>(
       builder: (context, list, child) {
-        Map<String, Todo> mapToShow = selectionType(mode, list);
+        List<Todo> listToShow = selectionType(mode, list);
         if(list.initState) return const Center(child: CircularProgressIndicator());
-        return mapToShow.isEmpty
+        return listToShow.isEmpty
             ? Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 15.0),
                 child: Center(
@@ -98,7 +98,7 @@ class _HomeScreenState extends State<HomeScreen> {
             : ListView(
                 physics: const BouncingScrollPhysics(),
                 children: [
-                  ...mapToShow.entries.map((e) => TodoItem(item: e.value, key: ValueKey(e.key)))
+                  ...listToShow.map((e) => TodoItem(item: e, key: ValueKey(e.id)))
                 ],
               );
       },
@@ -118,16 +118,16 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Map<String, Todo> selectionType(int mode, TodoList testList) {
+  List<Todo> selectionType(int mode, TodoList testList) {
     switch (mode) {
       case 0:
         return testList.todoList;
       case 1:
-        return testList.getDoneItems();
+        return testList.todoList.where((todo) => todo.done).toList();
       case 2:
-        return testList.getUndoneItems();
+        return testList.todoList.where((todo) => !todo.done).toList();
       default:
-        return {};
+        return [];
     }
   }
 }

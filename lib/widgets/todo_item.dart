@@ -37,7 +37,7 @@ class TodoItem extends StatelessWidget {
                   activeColor: Theme.of(context).primaryColor,
                   value: item.done,
                   onChanged: (_) {
-                      Provider.of<TodoList>(context, listen: false).updateChecked(item.id!);
+                      Provider.of<TodoList>(context, listen: false).updateChecked(item);
                   }),
             ),
             Text(
@@ -51,7 +51,7 @@ class TodoItem extends StatelessWidget {
             const Spacer(),
             IconButton(
                 onPressed: () {
-                    Provider.of<TodoList>(context, listen: false).deleteTodo(item.id!);
+                    Provider.of<TodoList>(context, listen: false).deleteTodo(item);
                 },
                 icon: const Icon(Icons.close,
                     color: Color.fromARGB(255, 120, 120, 121)))

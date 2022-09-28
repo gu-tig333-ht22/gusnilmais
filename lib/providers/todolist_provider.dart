@@ -4,86 +4,77 @@ import 'package:template/models/todo.dart';
 import 'package:http/http.dart' as http;
 
 const String apiKey = "6ee09eff-1b5c-4aac-bd7e-0583caa9ab52";
+const String baseUrl = "https://todoapp-api.apps.k8s.gu.se/todos";
+const String key = "?key=$apiKey";
 
 class TodoList with ChangeNotifier {
-  late Map<String, Todo> _todoList;
+  List<Todo> _todoList = [];
   bool initState = true;
 
-  Map<String, Todo> get todoList => _todoList;
+  List<Todo> get todoList => _todoList;
 
   TodoList() {
     getTodoListFromServer();
   }
 
   getTodoListFromServer() async {
-    _todoList = {};
+    http.Response serverResponse = await http.get(Uri.parse(baseUrl + key));
 
-    Uri api = Uri.parse("https://todoapp-api.apps.k8s.gu.se/todos?key=$apiKey");
-    var serverResponse = await http.get(api);
-    var returnData = jsonDecode(serverResponse.body);
-
-    for (var todo in returnData) {
-      Todo newTodo = Todo.fromJson(todo);
-      _todoList[newTodo.id!] = newTodo;
+    if (serverResponse.statusCode == 200) {
+      updateTodoList(serverResponse);
+      initState = false;
+    } else {
+      throw Exception("Failed to load items from API");
     }
-    initState = false;
-
-    notifyListeners();
   }
 
-  deleteTodo(String id) async {
-    Uri api = Uri.parse("https://todoapp-api.apps.k8s.gu.se/todos/$id?key=$apiKey");
-    await http.delete(api);
-    _todoList.remove(id);
+  deleteTodo(Todo todo) async {
+    http.Response serverResponse = await http.delete(Uri.parse("$baseUrl/${todo.id}$key"));
 
-    notifyListeners();
+    if (serverResponse.statusCode == 200) {
+      updateTodoList(serverResponse);
+    } else {
+      throw Exception("Failed to delete item");
+    }
   }
 
   addTodo(Todo newTodo) async {
-    Uri api = Uri.parse("https://todoapp-api.apps.k8s.gu.se/todos?key=$apiKey");
-    String data = jsonEncode(newTodo);
-    var serverResponse = await http.post(api, headers: {"Content-Type": "application/json"}, body: data);
+
+    http.Response serverResponse = await http.post(
+      Uri.parse(baseUrl + key),
+      headers: {"Content-Type": "application/json"}, 
+      body: jsonEncode(newTodo));
+
+    if (serverResponse.statusCode == 200) {
+      updateTodoList(serverResponse);
+    } else {
+      throw Exception("Failed to add item");
+    }
+  }
+
+  updateChecked(Todo todo) async {
+
+    http.Response serverResponse = await http.put(
+      Uri.parse("$baseUrl/${todo.id}$key"),
+      headers: {"Content-Type": "application/json"}, 
+      body: jsonEncode({"title": todo.title, "done": !todo.done}));
+
+    if(serverResponse.statusCode == 200) {
+    updateTodoList(serverResponse);
+    } else {
+      throw Exception("Failed to update item");
+    }
+  }
+
+  updateTodoList(http.Response serverResponse) {
     var returnData = jsonDecode(serverResponse.body);
+    _todoList = [];
 
-    for (var todo in returnData) {
-      Todo newTodo = Todo.fromJson(todo);
-      _todoList[newTodo.id!] = newTodo;
-    }
-
-    notifyListeners();
-  }
-
-  updateChecked(String id) async {
-    Uri api = Uri.parse("https://todoapp-api.apps.k8s.gu.se/todos/$id?key=$apiKey");
-
-    _todoList[id]!.done = !_todoList[id]!.done;
-
-    String data = jsonEncode(_todoList[id]);
-    await http.put(api, headers: {"Content-Type": "application/json"}, body: data);
-
-    notifyListeners();
-  }
-
-  Map<String, Todo> getDoneItems() {
-    Map<String, Todo> returnMap = {};
-
-    for (var todo in _todoList.values) {
-      if (todo.done) {
-        returnMap[todo.id!] = todo;
+      for (var todo in returnData) {
+        Todo newTodo = Todo.fromJson(todo);
+        _todoList.add(newTodo);
       }
-    }
-    return returnMap;
-  }
 
-  Map<String, Todo> getUndoneItems() {
-    Map<String, Todo> returnMap = {};
-
-    for (var todo in _todoList.values) {
-      if (!todo.done) {
-        returnMap[todo.id!] = todo;
-      }
-    }
-    return returnMap;
+      notifyListeners();
   }
-  
 }
